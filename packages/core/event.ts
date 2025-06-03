@@ -11,9 +11,14 @@ export const nameObjectSchema = z.object({
 
 function parseName(name: z.infer<typeof nameObjectSchema> | string | undefined) {
   if (typeof name === "string") return name;
-  else if (typeof name === "object" && nameObjectSchema.parse(name))
-    return `${name.firstName} ${name.lastName}`.trim();
-  else return "Nameless";
+  else if (typeof name === "object") {
+    const parsed = nameObjectSchema.safeParse(name);
+    if (parsed.success) {
+      const { firstName, lastName } = parsed.data;
+      return `${firstName} ${lastName ?? ""}`.trim();
+    }
+  }
+  return "Nameless";
 }
 
 export type EventNameObjectType = {

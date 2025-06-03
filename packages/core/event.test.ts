@@ -60,6 +60,33 @@ describe("event tests", () => {
       ]);
     });
 
+    it("should fall back to Nameless when attendeeName object is invalid", () => {
+      const tFunc = vi.fn(() => "foo");
+
+      const result = event.getEventName({
+        attendeeName: { foo: "bar" } as unknown as { firstName: string },
+        eventType: "example event type",
+        host: "example host",
+        eventDuration: 15,
+        t: tFunc as TFunction,
+      });
+
+      expect(result).toBe("foo");
+
+      const lastCall = tFunc.mock.lastCall;
+      expect(lastCall).toEqual([
+        "event_between_users",
+        {
+          eventName: "example event type",
+          host: "example host",
+          attendeeName: "Nameless",
+          interpolation: {
+            escapeValue: false,
+          },
+        },
+      ]);
+    });
+
     it("should return event name if no vars used", () => {
       const tFunc = vi.fn(() => "foo");
 
