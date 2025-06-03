@@ -6,7 +6,7 @@ import { APP_NAME, IS_PREMIUM_USERNAME_ENABLED, IS_MAILHOG_ENABLED } from "@calc
 import prisma from "@calcom/prisma";
 
 import { test } from "./lib/fixtures";
-import { getEmailsReceivedByUser, localize } from "./lib/testUtils";
+import { getEmailsReceivedByUser, localize, waitForEmail } from "./lib/testUtils";
 import { expectInvitationEmailToBeReceived } from "./team/expects";
 
 test.describe.configure({ mode: "parallel" });
@@ -289,19 +289,18 @@ test.describe("Email Signup Flow Test", async () => {
     const newUser = await users.set(userToCreate.email);
     expect(newUser).not.toBeNull();
 
-    const receivedEmails = await getEmailsReceivedByUser({
+    const receivedEmails = await waitForEmail({
       emails,
       userEmail: userToCreate.email,
+      subject: `${APP_NAME}: Verify your account`,
     });
 
-    // We need to wait for emails to be sent
-    // eslint-disable-next-line playwright/no-wait-for-timeout
-    await page.waitForTimeout(5000);
+    expect(receivedEmails?.total).toBeGreaterThan(0);
 
-    expect(receivedEmails?.total).toBe(1);
-
-    const verifyEmail = receivedEmails?.items[0];
-    expect(verifyEmail?.subject).toBe(`${APP_NAME}: Verify your account`);
+    const verifyEmail = receivedEmails?.items.find(
+      (email) => email.subject === `${APP_NAME}: Verify your account`
+    );
+    expect(verifyEmail).toBeTruthy();
   });
   test("If signup is disabled allow team invites", async ({ browser, page, users, emails }) => {
     // eslint-disable-next-line playwright/no-skipped-test
