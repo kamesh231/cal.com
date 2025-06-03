@@ -14,6 +14,8 @@ declare module "next-auth" {
     profileId?: number | null;
     upId: string;
     user: User;
+    marketplaceId?: string | null;
+    vendorId?: string | null;
   }
 
   interface User extends Omit<DefaultUser, "id"> {
@@ -68,5 +70,7 @@ declare module "next-auth/jwt" {
     };
     organizationId?: number | null;
     locale?: string;
+    marketplaceId?: string | null;
+    vendorId?: string | null;
   }
 }

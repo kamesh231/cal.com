@@ -668,6 +668,12 @@ model Booking {
   // Ah, made a typo here. Should have been routedFromRoutingFormRe"s"ponse. Live with it :(
   routedFromRoutingFormReponse App_RoutingForms_FormResponse?
   assignmentReason             AssignmentReason[]
+  vendor                       Vendor?   @relation(fields: [vendorId], references: [id])
+  vendorId                     String?
+  staff                        Staff?    @relation(fields: [staffId], references: [id])
+  staffId                      String?
+  service                      Service?  @relation(fields: [serviceId], references: [id])
+  serviceId                    String?
 
   @@index([eventTypeId])
   @@index([userId])
@@ -675,6 +681,7 @@ model Booking {
   @@index([recurringEventId])
   @@index([uid])
   @@index([status])
+  @@index([vendorId])
   @@index([startTime, endTime, status])
 }
 
@@ -1823,4 +1830,91 @@ model App_RoutingForms_IncompleteBookingActions {
   data         Json
   enabled      Boolean                     @default(true)
   credentialId Int?
+}
+
+enum MarketplaceStatus {
+  draft
+  active
+}
+
+model Marketplace {
+  id        String   @id @default(uuid())
+  name      String
+  status    MarketplaceStatus @default(draft)
+  createdAt DateTime @default(now())
+  vendors   Vendor[]
+}
+
+model Vendor {
+  id            String      @id @default(uuid())
+  marketplace   Marketplace @relation(fields: [marketplaceId], references: [id])
+  marketplaceId String
+  name          String
+  timezone      String
+  openHoursJson Json?
+  teams         Team[]
+  services      Service[]
+  staff         Staff[]
+  ledgerEntries LedgerEntry[]
+
+  @@index([marketplaceId])
+}
+
+model Team {
+  id       String @id @default(uuid())
+  vendor   Vendor @relation(fields: [vendorId], references: [id])
+  vendorId String
+  name     String
+  services Service[]
+  staff    Staff[]
+}
+
+model Skill {
+  id   String @id @default(uuid())
+  code String @unique
+  staff Staff[]
+  services Service[]
+}
+
+model Staff {
+  id            String   @id @default(uuid())
+  vendor        Vendor   @relation(fields: [vendorId], references: [id])
+  vendorId      String
+  name          String
+  skills        Skill[]
+  workingDays   Int[]
+  workingHours  Json?
+  lunchStart    DateTime?
+  lunchDuration Int?
+  bookings      Booking[]
+  team          Team?    @relation(fields: [teamId], references: [id])
+  teamId        String?
+
+  @@index([vendorId])
+}
+
+model Service {
+  id             String  @id @default(uuid())
+  vendor         Vendor  @relation(fields: [vendorId], references: [id])
+  vendorId       String
+  team           Team    @relation(fields: [teamId], references: [id])
+  teamId         String
+  name           String
+  durationMin    Int
+  requiredSkill  Skill   @relation(fields: [requiredSkillId], references: [id])
+  requiredSkillId String
+  bookings       Booking[]
+
+  @@index([vendorId])
+}
+
+model LedgerEntry {
+  id        String   @id @default(uuid())
+  booking   Booking  @relation(fields: [bookingId], references: [id])
+  bookingId Int
+  vendor    Vendor   @relation(fields: [vendorId], references: [id])
+  vendorId  String
+  amount    Int
+  feeAmount Int
+  createdAt DateTime @default(now())
 }
