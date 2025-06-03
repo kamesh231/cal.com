@@ -7,7 +7,7 @@ import { disallowUndefinedDeleteUpdateManyExtension } from "./extensions/disallo
 import { excludeLockedUsersExtension } from "./extensions/exclude-locked-users";
 import { excludePendingPaymentsExtension } from "./extensions/exclude-pending-payment-teams";
 import { usageTrackingExtention } from "./extensions/usage-tracking";
-import { bookingReferenceMiddleware } from "./middleware";
+import { bookingReferenceMiddleware, marketplaceMiddleware } from "./middleware";
 
 const prismaOptions: Prisma.PrismaClientOptions = {};
 
@@ -73,6 +73,12 @@ export const readonlyPrisma = process.env.INSIGHTS_DATABASE_URL
       datasources: { db: { url: process.env.INSIGHTS_DATABASE_URL } },
     })
   : prisma;
+
+export function getPrismaForMarketplace(marketplaceId: string) {
+  const client = customPrisma();
+  marketplaceMiddleware(client, marketplaceId);
+  return client;
+}
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prismaWithoutClientExtensions = prismaWithoutClientExtensions;

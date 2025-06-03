@@ -489,6 +489,8 @@ export const getOptions = ({
           name: session?.name ?? token.name,
           username: session?.username ?? token.username,
           email: session?.email ?? token.email,
+          marketplaceId: (session as any)?.marketplaceId ?? (token as any).marketplaceId ?? null,
+          vendorId: (session as any)?.vendorId ?? (token as any).vendorId ?? null,
         } as JWT;
       }
       const autoMergeIdentities = async () => {
@@ -554,6 +556,8 @@ export const getOptions = ({
           profileId: profile.id,
           upId,
           belongsToActiveTeam,
+          marketplaceId: (token as any).marketplaceId ?? null,
+          vendorId: (token as any).vendorId ?? null,
           // All organizations in the token would be too big to store. It breaks the sessions request.
           // So, we just set the currently switched organization only here.
           // platform org user don't need profiles nor domains
@@ -596,6 +600,8 @@ export const getOptions = ({
           locale: user?.locale,
           profileId: user.profile?.id ?? token.profileId ?? null,
           upId: user.profile?.upId ?? token.upId ?? null,
+          marketplaceId: (token as any).marketplaceId ?? null,
+          vendorId: (token as any).vendorId ?? null,
         } as JWT;
       }
 
@@ -710,6 +716,8 @@ export const getOptions = ({
         ...session,
         profileId,
         upId: token.upId || session.upId,
+        marketplaceId: (token as any).marketplaceId ?? null,
+        vendorId: (token as any).vendorId ?? null,
         hasValidLicense,
         user: {
           ...session.user,

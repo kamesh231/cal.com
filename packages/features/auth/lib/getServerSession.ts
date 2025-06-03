@@ -105,6 +105,8 @@ export async function getServerSession(options: {
     },
     profileId: token.profileId,
     upId,
+    marketplaceId: (token as any).marketplaceId ?? null,
+    vendorId: (token as any).vendorId ?? null,
   };
 
   if (token?.impersonatedBy?.id) {
