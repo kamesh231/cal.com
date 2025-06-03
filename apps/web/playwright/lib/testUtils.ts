@@ -276,6 +276,37 @@ export async function getEmailsReceivedByUser({
   return matchingEmails;
 }
 
+export async function waitForEmail({
+  emails,
+  userEmail,
+  subject,
+  timeout = 10000,
+  interval = 500,
+}: {
+  emails?: ReturnType<typeof createEmailsFixture>;
+  userEmail: string;
+  subject: string;
+  timeout?: number;
+  interval?: number;
+}): Promise<Messages | null> {
+  if (!emails) return null;
+
+  const startTime = Date.now();
+
+  while (Date.now() - startTime < timeout) {
+    const received = await getEmailsReceivedByUser({ emails, userEmail });
+    const hasExpectedEmail = received?.items.some(
+      (item) => item.subject === subject
+    );
+    if (hasExpectedEmail) {
+      return received;
+    }
+    await new Promise((resolve) => setTimeout(resolve, interval));
+  }
+
+  return null;
+}
+
 export async function expectEmailsToHaveSubject({
   emails,
   organizer,
